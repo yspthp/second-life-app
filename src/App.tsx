@@ -1,19 +1,23 @@
-import { useState } from 'react'
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
-function App() {
+interface TimerProps {
+  type: 'relax' | 'work';
+  setCurrentPage: (page: string) => void;
+}
+
+const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('main');
   const [totalScore, setTotalScore] = useState(() => {
-    const relaxScore = parseInt(localStorage.getItem('relaxScore')) || 0;
-    const workScore = parseInt(localStorage.getItem('workScore')) || 0;
+    const relaxScore = parseInt(localStorage.getItem('relaxScore') || '0');
+    const workScore = parseInt(localStorage.getItem('workScore') || '0');
     return relaxScore + workScore;
   });
 
   useEffect(() => {
     const updateTotalScore = () => {
-      const relaxScore = parseInt(localStorage.getItem('relaxScore')) || 0;
-      const workScore = parseInt(localStorage.getItem('workScore')) || 0;
+      const relaxScore = parseInt(localStorage.getItem('relaxScore') || '0');
+      const workScore = parseInt(localStorage.getItem('workScore') || '0');
       setTotalScore(relaxScore + workScore);
     };
 
@@ -26,7 +30,7 @@ function App() {
     };
   }, []);
 
-  const MainPage = () => (
+  const MainPage: React.FC = () => (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200">
       <div className="h-2 bg-gradient-to-r from-blue-200 via-cyan-200 to-pink-200" />
       
@@ -52,7 +56,8 @@ function App() {
 
           <button
             onClick={() => setCurrentPage('work')}
-            className="p-6 rounded-xl transition-colors" style={{backgroundColor: '#9FD4A3', ':hover': {backgroundColor: '#8FC393'}}}
+            className="p-6 rounded-xl transition-colors"
+            style={{backgroundColor: '#9FD4A3'}}
           >
             <div className="flex items-center gap-4">
               <div className="p-3 bg-white/20 rounded-lg">
@@ -101,7 +106,7 @@ function App() {
     </div>
   );
 
-  const Timer = ({ type }) => {
+  const Timer: React.FC<TimerProps> = ({ type, setCurrentPage }) => {
     const [timeCount, setTimeCount] = useState(() => {
       const saved = localStorage.getItem(`${type}Time`);
       return saved ? parseInt(saved) : 0;
@@ -113,11 +118,11 @@ function App() {
     });
     
     const [isActive, setIsActive] = useState(false);
-    const intervalRef = useRef(null);
-    const lastScoreRef = useRef(0);
-    const interval = type === 'relax' ? 90 : 60; // 1.5分鐘或1分鐘
-    const scoreIncrement = type === 'relax' ? 3 : 4; // 躺平區3分，勞動區4分
-    const bgColor = type === 'relax' ? '#93C5FD' : '#9FD4A3'; // Pastel 藍色
+    const intervalRef = useRef<number | null>(null);
+    const lastScoreRef = useRef<number>(0);
+    const interval = type === 'relax' ? 90 : 60;
+    const scoreIncrement = type === 'relax' ? 3 : 4;
+    const bgColor = type === 'relax' ? '#93C5FD' : '#9FD4A3';
     const bgColorHover = type === 'relax' ? '#7AB3FC' : '#8FC393';
 
     useEffect(() => {
@@ -127,7 +132,6 @@ function App() {
             const newTime = prevTime + 1;
             localStorage.setItem(`${type}Time`, newTime.toString());
 
-            // 檢查是否需要加分
             const currentInterval = Math.floor(newTime / interval);
             const lastInterval = Math.floor(lastScoreRef.current / interval);
 
@@ -144,12 +148,11 @@ function App() {
           });
         };
 
-        // 設置初始計分點
         if (lastScoreRef.current === 0) {
           lastScoreRef.current = Math.floor(timeCount / interval) * interval;
         }
 
-        intervalRef.current = setInterval(tick, 1000);
+        intervalRef.current = window.setInterval(tick, 1000);
 
         return () => {
           if (intervalRef.current) {
@@ -158,9 +161,9 @@ function App() {
           }
         };
       }
-    }, [isActive, interval, type, scoreIncrement]);
+    }, [isActive, interval, type, scoreIncrement, timeCount]);
 
-    const formatTime = (seconds) => {
+    const formatTime = (seconds: number): string => {
       const h = Math.floor(seconds / 3600);
       const m = Math.floor((seconds % 3600) / 60);
       const s = seconds % 60;
@@ -201,7 +204,7 @@ function App() {
                 </div>
                 <div className="text-xl mt-4">
                   累積分數: 
-                  <span className={`font-semibold text-${bgColor}-500 ml-2`}>
+                  <span className="font-semibold ml-2" style={{ color: bgColor }}>
                     {currentScore}
                   </span>
                 </div>
@@ -211,10 +214,7 @@ function App() {
                 onClick={() => setIsActive(!isActive)}
                 className="w-full py-4 px-6 rounded-xl text-white font-medium transition-colors"
                 style={{
-                  backgroundColor: isActive ? '#FDA4AF' : bgColor,
-                  ':hover': {
-                    backgroundColor: isActive ? '#FB7185' : bgColorHover
-                  }
+                  backgroundColor: isActive ? '#FDA4AF' : bgColor
                 }}
               >
                 {isActive ? '暫停' : '開始'}
@@ -246,7 +246,7 @@ function App() {
     );
   };
 
-  const ScanPage = () => (
+  const ScanPage: React.FC = () => (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200">
       <div className="h-2 bg-gradient-to-r from-blue-200 via-cyan-200 to-pink-200" />
       
@@ -294,7 +294,7 @@ function App() {
               <div className="p-4 bg-red-50">關係穩定，但深度不足</div>
               <div className="p-4 bg-red-50">靈魂伴侶，關係深入穩定</div>
 
-              <div className="p-4 bg-red-50">友情及其他關係</div>
+<div className="p-4 bg-red-50">友情及其他關係</div>
               <div className="p-4 bg-red-50">基本互動，功能性關係</div>
               <div className="p-4 bg-red-50">關係穩定，但深度不足</div>
               <div className="p-4 bg-red-50">推心置腹，毫無保留的關係</div>
@@ -345,9 +345,9 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'relax':
-        return <Timer type="relax" />;
+        return <Timer type="relax" setCurrentPage={setCurrentPage} />;
       case 'work':
-        return <Timer type="work" />;
+        return <Timer type="work" setCurrentPage={setCurrentPage} />;
       case 'scan':
         return <ScanPage />;
       default:
@@ -358,4 +358,4 @@ function App() {
   return <div className="min-h-screen">{renderPage()}</div>;
 };
 
-export default PreviewApp;
+export default App;
